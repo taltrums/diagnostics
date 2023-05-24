@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -62,6 +64,9 @@ class _DicomViewerState extends State<DicomViewer> {
                           allowMultiple: true);
                   if (result != null) {
                     // implement code to process the file
+                    _getDicomData(
+                        filesBytes:
+                            File(result.files.first.path!).readAsBytesSync());
                   } else {
                     const Text("Some Error Occured, Please try again!");
                   }
@@ -71,5 +76,16 @@ class _DicomViewerState extends State<DicomViewer> {
         ),
       ),
     );
+  }
+
+  Future _getDicomData({required Uint8List filesBytes}) async {
+    final arguments = {'fileBytes': filesBytes};
+    var fileData =
+        await dicomFileChannel.invokeMethod('getFileData', arguments);
+    setState(() {
+      _imageBytes = fileData["imageByteArray"];
+      _paitentName = fileData["patientName"];
+      _isImageProcessed = true;
+    });
   }
 }
